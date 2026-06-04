@@ -1,0 +1,121 @@
+
+#!/usr/bin/env bash
+#
+# wasmd v0.54 이하 일부 체인은 reference-types / bulk-memory feature를 지원하지 않습니다.
+#
+# 빌드 단계:
+#   1) Rust 1.77.0으로 빌드 (두 feature 모두 기본 비활성화)
+#   2) wasm-opt 후처리로 최종 검증 및 용량 최적화
+#
+# 산출물:
+#   artifacts/<crate_name>.wasm  <- 체인 업로드용 최종 파일
+
+set -euo pipefail
+
+# 첫 번째 인수를 타겟 경로로 사용. 없으면 현재 디렉터리.
+TARGET_DIR="${1:-$(pwd)}"
+TARGET_DIR="$(cd "${TARGET_DIR}" && pwd)"
+cd "${TARGET_DIR}"
+echo "타겟 경로: ${TARGET_DIR}"
+
+TOOLCHAIN="${TOOLCHAIN:-1.77.0}"
+CRATE_NAME="$(sed -n 's/^name = "\([^"]*\)"$/\1/p' Cargo.toml | head -n 1 | tr '-' '_')"
+if [[ -z "${CRATE_NAME}" ]]; then
+  echo "Cargo.toml에서 package.name을 찾지 못했습니다."
+  exit 1
+fi
+
+if [[ ! -f "src/lib.rs" ]]; then
+  echo "src/lib.rs가 없어 wasm 라이브러리 빌드를 진행할 수 없습니다."
+  echo "CosmWasm 컨트랙트 엔트리 함수는 src/lib.rs 기준으로 구성하세요."
+  exit 1
+fi
+
+ARTIFACTS_DIR="artifacts"
+OUTPUT_WASM="${ARTIFACTS_DIR}/${CRATE_NAME}.wasm"
+MAX_WASM_SIZE_KB="${MAX_WASM_SIZE_KB:-800}"
+
+echo "toolchain: ${TOOLCHAIN}"
+echo ""
+echo ">>> [1/3] wasm32 target 확인"
+if ! rustup toolchain list | grep -q "^${TOOLCHAIN}"; then
+  echo "- Rust ${TOOLCHAIN} 설치"
+  rustup toolchain install "${TOOLCHAIN}" --profile minimal
+fi
+rustup target add wasm32-unknown-unknown --toolchain "${TOOLCHAIN}"
+
+# Cargo가 실제로 사용하는 target 디렉터리를 조회합니다. (workspace-aware)
+if [[ -n "${CARGO_TARGET_DIR:-}" ]]; then
+  TARGET_BUILD_DIR="${CARGO_TARGET_DIR}"
+else
+  TARGET_BUILD_DIR="$(cargo +"${TOOLCHAIN}" metadata --format-version 1 --no-deps 2>/dev/null | tr -d '\n' | sed -n 's/.*"target_directory":"\([^"]*\)".*/\1/p' | sed 's#\\/#/#g')"
+fi
+
+if [[ -z "${TARGET_BUILD_DIR}" ]]; then
+  TARGET_BUILD_DIR="${TARGET_DIR}/target"
+fi
+
+if [[ "${TARGET_BUILD_DIR}" != /* ]]; then
+  TARGET_BUILD_DIR="${TARGET_DIR}/${TARGET_BUILD_DIR}"
+fi
+
+RELEASE_WASM="${TARGET_BUILD_DIR}/wasm32-unknown-unknown/release/${CRATE_NAME}.wasm"
+
+echo "cargo target dir: ${TARGET_BUILD_DIR}"
+
+echo ""
+echo ">>> [2/3] cargo release 빌드"
+cargo +"${TOOLCHAIN}" build --release --target wasm32-unknown-unknown --lib
+
+if [[ ! -f "${RELEASE_WASM}" ]]; then
+  echo "빌드 산출물을 찾지 못했습니다: ${RELEASE_WASM}"
+  echo "워크스페이스 target 설정(CARGO_TARGET_DIR/.cargo/config)을 확인하세요."
+  exit 1
+fi
+
+echo ""
+echo ">>> [3/3] wasm-opt 후처리(최적화)"
+mkdir -p "${ARTIFACTS_DIR}"
+
+if ! command -v wasm-opt >/dev/null 2>&1; then
+  echo "wasm-opt가 설치되어 있지 않습니다. binaryen을 먼저 설치하세요."
+  exit 1
+fi
+
+wasm-opt \
+  -Oz \
+  --strip-debug \
+  --strip-dwarf \
+  --strip-producers \
+  -o "${OUTPUT_WASM}" \
+  "${RELEASE_WASM}"
+
+WASM_ABS_PATH="$(pwd)/${OUTPUT_WASM}"
+
+echo ""
+echo "=== 빌드 완료(용량 최적화 Oz) ==="
+echo "입력(최적화 전):  $(ls -lh "${RELEASE_WASM}" | awk '{print $5, $9}')"
+echo "출력(최적화 후):  $(ls -lh "${OUTPUT_WASM}" | awk '{print $5, $9}')"
+
+ACTUAL_SIZE_BYTES="$(wc -c < "${OUTPUT_WASM}" | tr -d ' ')"
+MAX_SIZE_BYTES="$((MAX_WASM_SIZE_KB * 1024))"
+if (( ACTUAL_SIZE_BYTES > MAX_SIZE_BYTES )); then
+  echo ""
+  echo "[경고] wasm 크기가 ${MAX_WASM_SIZE_KB}KB를 초과했습니다."
+  echo "       현재 크기: $((ACTUAL_SIZE_BYTES / 1024))KB (${ACTUAL_SIZE_BYTES} bytes)"
+else
+  echo ""
+  echo "[확인] wasm 크기 ${MAX_WASM_SIZE_KB}KB 이하 충족: $((ACTUAL_SIZE_BYTES / 1024))KB"
+fi
+
+echo ""
+echo "체인 업로드 시 아래 파일을 사용하세요:"
+echo "   경로: $(pwd)/${OUTPUT_WASM}"
+echo "   환경변수 설정: export WASM_FILE=\"${WASM_ABS_PATH}\""
+
+# EXPORT_ENV="${TARGET_DIR}/export.env"
+# printf 'export WASM_FILE=%q\n' "${WASM_ABS_PATH}" > "${EXPORT_ENV}"
+
+# echo ""
+# echo "환경변수 파일 생성: ${EXPORT_ENV}"
+# echo "즉시 반영: source \"${EXPORT_ENV}\""
