@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ConfigResponse",
+  "description": "Merged view: local route fields + shared config resolved from the factory.",
+  "type": "object",
+  "required": [
+    "dest_chain",
+    "factory",
+    "owner",
+    "recipient_addr",
+    "refund_addr",
+    "sender_addr",
+    "skip_entrypoint_addr",
+    "skip_relayer_addr"
+  ],
+  "properties": {
+    "dest_chain": {
+      "type": "string"
+    },
+    "factory": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "recipient_addr": {
+      "type": "string"
+    },
+    "refund_addr": {
+      "type": "string"
+    },
+    "sender_addr": {
+      "type": "string"
+    },
+    "skip_entrypoint_addr": {
+      "type": "string"
+    },
+    "skip_relayer_addr": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

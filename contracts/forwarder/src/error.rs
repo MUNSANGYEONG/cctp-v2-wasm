@@ -12,9 +12,6 @@ pub enum ContractError {
     #[error("MemoEncodeError")]
     MemoEncodeError,
 
-    #[error("IBCTransferFailed")]
-    IBCTransferFailed,
-
     #[error("NoFundsToForward")]
     NoFundsToForward,
 
@@ -30,4 +27,13 @@ pub enum ContractError {
     #[error("InsufficientRequestFunds")]
     InsufficientRequestFunds,
 
+    /// The forwarder could not read shared config from its parent factory.
+    /// No fallback — the transaction reverts so funds are never forwarded with
+    /// stale or missing routing parameters.
+    #[error("FactoryQueryFailed: {0}")]
+    FactoryQueryFailed(String),
+
+    /// `instantiate` was not called by the declared factory address.
+    #[error("FactoryMismatch")]
+    FactoryMismatch,
 }

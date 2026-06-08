@@ -3,16 +3,9 @@ use cosmwasm_std::Coin;
 
 use crate::state::RequestStatus;
 
-#[cw_serde]
-pub struct InstantiateMsg {
-    pub sender_addr: String,
-    pub recipient_addr: String,
-    pub dest_chain: String,
-    pub refund_addr: String,
-    pub skip_relayer_addr: String,
-    pub skip_entrypoint_addr: String,
-    pub owner: Option<String>,
-}
+/// Instantiated by the factory via `instantiate2`. Defined in the shared crate
+/// so the factory (producer) and forwarder (consumer) share one JSON schema.
+pub use forwarder_factory_shared::ForwarderInstantiateMsg as InstantiateMsg;
 
 #[cw_serde]
 pub enum ExecuteMsg {
@@ -44,10 +37,12 @@ pub enum QueryMsg {
     },
 
     #[returns(RequestResponse)]
-    RequestByMintTxHash {
-        mint_tx_hash: String,
-    },
+    RequestByMintTxHash { mint_tx_hash: String },
 }
+
+/// No-op migrate payload (cw2 versioning hook).
+#[cw_serde]
+pub struct MigrateMsg {}
 
 #[cw_serde]
 pub enum RequestOrder {
@@ -55,14 +50,17 @@ pub enum RequestOrder {
     Desc,
 }
 
+/// Merged view: local route fields + shared config resolved from the factory.
 #[cw_serde]
 pub struct ConfigResponse {
+    pub factory: String,
     pub sender_addr: String,
     pub recipient_addr: String,
     pub dest_chain: String,
-    pub refund_addr: String,
+    // Resolved from the parent factory at query time:
     pub skip_relayer_addr: String,
     pub skip_entrypoint_addr: String,
+    pub refund_addr: String,
     pub owner: String,
 }
 

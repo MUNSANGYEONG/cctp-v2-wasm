@@ -1,1 +1,4 @@
 /target
+
+# 배포 설정(키/노드 정보 포함) — 커밋 금지
+scripts/config.env

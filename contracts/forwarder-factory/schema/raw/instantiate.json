@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InstantiateMsg",
+  "type": "object",
+  "required": [
+    "forwarder_code_id",
+    "refund_addr",
+    "skip_entrypoint_addr",
+    "skip_relayer_addr"
+  ],
+  "properties": {
+    "forwarder_code_id": {
+      "description": "code_id of the uploaded forwarder contract used for instantiate2.",
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "owner": {
+      "description": "Defaults to the instantiating sender when omitted.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "refund_addr": {
+      "type": "string"
+    },
+    "skip_entrypoint_addr": {
+      "type": "string"
+    },
+    "skip_relayer_addr": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

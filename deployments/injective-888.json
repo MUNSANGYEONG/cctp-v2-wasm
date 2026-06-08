@@ -1,0 +1,79 @@
+{
+  "chain_id": "injective-888",
+  "binary": "injectived",
+  "updated_at": "2026-06-08T07:58:51Z",
+  "forwarder": {
+    "code_id": 39581,
+    "code_history": [
+      {
+        "code_id": 39570,
+        "store_tx": "CC54605DCF3D8310DB40DCB1C5CDAD108A3D63519B2D0A3D3F62F16A734EBEA4",
+        "height": "129014529",
+        "created_at": "2026-06-08T06:23:01Z"
+      },
+      {
+        "code_id": 39572,
+        "store_tx": "A440015EAC6FBD34DD9A99A45278AC31283DE6EC72BB75363F1263A3D90B206E",
+        "height": "129015187",
+        "created_at": "2026-06-08T06:30:21Z"
+      },
+      {
+        "code_id": 39574,
+        "store_tx": "6A8E3CA4C0D196216DB0DCAE7FF01ABC1628DADC994E5B1D41DBE8B0F0ACE35E",
+        "height": "129016495",
+        "created_at": "2026-06-08T06:45:02Z"
+      },
+      {
+        "code_id": 39576,
+        "store_tx": "8DB103C3BA333A4ADF772711FF5044138E5A017B7EBB110C1C68369B8E567DA1",
+        "height": "129016622",
+        "created_at": "2026-06-08T06:46:28Z"
+      },
+      {
+        "code_id": 39579,
+        "store_tx": "62E0F2701531BBA89024FEC6509C699A3AAD6714148DFD2787649D567C4E5759",
+        "height": "129022208",
+        "created_at": "2026-06-08T07:49:00Z"
+      },
+      {
+        "code_id": 39581,
+        "store_tx": "79DF3099941F86ABD3198EB12C67D3158E60B37BB32EF9F819E12C523BFAD78B",
+        "height": "129023015",
+        "created_at": "2026-06-08T07:58:00Z"
+      }
+    ]
+  },
+  "factory": {
+    "code_id": 39582,
+    "address": "inj1l6deunsm683tz3d0eflskd5l7zh8trckxnk4ed",
+    "admin": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
+    "owner": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
+    "skip_relayer_addr": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
+    "skip_entrypoint_addr": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
+    "store_tx": "8B1650247A20078B76777A4127ADD4B8C89BB8C316C6E036B5C33AFD0B7387DE",
+    "instantiate_tx": "67E04D49EDE504BE17B991CAEEA9B9CC181BDB085E778240B418545D8200373D",
+    "instantiate_height": 129023033,
+    "version_history": [
+      {
+        "code_id": 39582,
+        "action": "instantiate",
+        "tx": "67E04D49EDE504BE17B991CAEEA9B9CC181BDB085E778240B418545D8200373D",
+        "height": 129023033,
+        "at": "2026-06-08T07:58:12Z"
+      }
+    ]
+  },
+  "forwarders": [
+    {
+      "sender_addr": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
+      "dest_chain": "dydxx-1",
+      "recipient_addr": "dydx149kceku3avmfsrtr40jhcqyr33g6qzynxn76je",
+      "address": "inj1v36v58c0r6quga48knckacjtpntwd7dpek6cwv",
+      "salt": "4b30b5f73b973daa3a2616eb538bd87303f1a04f9f9339ddab22615adff8a849",
+      "code_id": 39581,
+      "create_tx": "5F2C8FF2EB257DB7316DAB5397E1ACE2BB77273F568F47AB093F372F24ABD79C",
+      "height": 129023092,
+      "created_at": "2026-06-08T07:58:51Z"
+    }
+  ]
+}

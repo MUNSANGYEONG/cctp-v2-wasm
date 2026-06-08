@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InstantiateMsg",
+  "description": "Init payload the factory sends when instantiating a forwarder via `instantiate2`. Shared so the JSON shape can never drift between the factory (producer) and the forwarder (consumer).",
+  "type": "object",
+  "required": [
+    "dest_chain",
+    "factory",
+    "recipient_addr",
+    "sender_addr"
+  ],
+  "properties": {
+    "dest_chain": {
+      "type": "string"
+    },
+    "factory": {
+      "description": "The instantiating factory; the forwarder verifies this equals `info.sender`.",
+      "type": "string"
+    },
+    "recipient_addr": {
+      "type": "string"
+    },
+    "sender_addr": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

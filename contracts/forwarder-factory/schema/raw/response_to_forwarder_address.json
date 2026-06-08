@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ForwarderAddressResponse",
+  "type": "object",
+  "required": [
+    "address",
+    "exists"
+  ],
+  "properties": {
+    "address": {
+      "description": "Bech32 address derived via instantiate2 (deterministic).",
+      "type": "string"
+    },
+    "exists": {
+      "description": "Whether a forwarder has actually been instantiated at `address`.",
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

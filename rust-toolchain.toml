@@ -1,0 +1,6 @@
+[toolchain]
+# Workspace inheritance (`{ workspace = true }`) requires cargo >= 1.64.
+# The machine's default `stable` is pinned to an old 1.62.1, so pin explicitly.
+channel = "1.77.0"
+components = ["rustfmt", "clippy", "rust-analyzer"]
+targets = ["wasm32-unknown-unknown"]

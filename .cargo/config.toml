@@ -1,0 +1,18 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# cargo 별칭(alias) — 추가 설치 없이 쓰는 순수 cargo 단축키.
+#   cargo wasm        : wasm 라이브러리 릴리스 빌드(두 컨트랙트)
+#   cargo unit-test   : 워크스페이스 전체 테스트(--locked)
+#   cargo lint        : clippy(경고를 에러로)
+#
+# 주의: 빌트인 명령(build/test/run/check/fmt/clippy/clean)은 별칭으로 덮어쓸 수
+#       없어 비빌트인 이름을 사용합니다. 최적화(wasm-opt)·스키마·배포 등 멀티스텝
+#       작업은 just(justfile)를 사용하세요.
+#
+# native(host) target 을 기본값으로 두어 `cargo unit-test` 가 정상 동작합니다.
+# wasm 빌드는 명시적으로 `cargo wasm` 을 쓰세요.
+# ─────────────────────────────────────────────────────────────────────────────
+
+[alias]
+wasm = "build --release --target wasm32-unknown-unknown --lib"
+unit-test = "test --workspace --locked"
+lint = "clippy --workspace --all-targets -- -D warnings"

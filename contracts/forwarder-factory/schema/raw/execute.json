@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExecuteMsg",
+  "oneOf": [
+    {
+      "description": "Deterministically create a forwarder for a (sender, dest_chain, recipient) route. Owner-only. Idempotent-guarded by the route salt.",
+      "type": "object",
+      "required": [
+        "create_forwarder"
+      ],
+      "properties": {
+        "create_forwarder": {
+          "type": "object",
+          "required": [
+            "dest_chain",
+            "recipient_addr",
+            "sender_addr"
+          ],
+          "properties": {
+            "dest_chain": {
+              "type": "string"
+            },
+            "recipient_addr": {
+              "type": "string"
+            },
+            "sender_addr": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Update shared config. Owner-only. Changing `forwarder_code_id` changes the predicted address of *future* forwarders (existing ones are unaffected).",
+      "type": "object",
+      "required": [
+        "update_config"
+      ],
+      "properties": {
+        "update_config": {
+          "type": "object",
+          "properties": {
+            "forwarder_code_id": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "owner": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "refund_addr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "skip_entrypoint_addr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "skip_relayer_addr": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

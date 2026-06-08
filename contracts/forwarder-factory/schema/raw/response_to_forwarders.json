@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ForwardersResponse",
+  "type": "object",
+  "required": [
+    "forwarders"
+  ],
+  "properties": {
+    "forwarders": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ForwarderInfo"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "ForwarderInfo": {
+      "type": "object",
+      "required": [
+        "address",
+        "created_height",
+        "dest_chain",
+        "recipient_addr",
+        "sender_addr"
+      ],
+      "properties": {
+        "address": {
+          "type": "string"
+        },
+        "created_height": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "dest_chain": {
+          "type": "string"
+        },
+        "recipient_addr": {
+          "type": "string"
+        },
+        "sender_addr": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
