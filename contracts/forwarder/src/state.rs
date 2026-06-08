@@ -35,6 +35,7 @@ pub struct TransferRequest {
     pub destination_channel: String,
     pub status: RequestStatus,
     pub hook_data: Option<String>,
+    pub error_msg: Option<String>,
 }
 
 pub const CONFIG: Item<Config> = Item::new("config");

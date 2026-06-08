@@ -14,7 +14,8 @@ use crate::msg::{
     SkipTransferCallPayload,
 };
 use crate::state::{
-    Config, RequestStatus, TransferRequest, CONFIG, NEXT_REQUEST_ID, REQUESTS_BY_ID,
+    Config, RequestStatus, TransferRequest, CONFIG, FORWARD_REPLY_ID, NEXT_REQUEST_ID,
+    REQUESTS_BY_ID,
     REQUEST_ID_BY_MINT_TX_HASH,
 };
 
@@ -28,7 +29,7 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     // The factory instantiates the forwarder (via instantiate2), so the declared
     // factory must equal the sender. This binds the forwarder to its config source.
@@ -77,14 +78,14 @@ pub fn execute(
             destination_channel,
         ),
         ExecuteMsg::Refund { mint_tx_hash } => execute_refund(deps, env, info, mint_tx_hash),
-        ExecuteMsg::Abandon { mint_tx_hash } => execute_abandon(deps, info, mint_tx_hash),
+        ExecuteMsg::Abandon { mint_tx_hash } => execute_abandon(deps, env, info, mint_tx_hash),
     }
 }
 
 #[entry_point]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<QueryResponse> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<QueryResponse> {
     match msg {
-        QueryMsg::Config {} => to_json_binary(&query_config(deps)?),
+        QueryMsg::Config {} => to_json_binary(&query_config(deps, env)?),
         QueryMsg::Requests {
             start_after,
             limit,
@@ -108,7 +109,8 @@ pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> Result<Response, ContractE
             REQUESTS_BY_ID.update(deps.storage, msg.id, |maybe| match maybe {
                 Some(mut request) => {
                     request.status = RequestStatus::Fail;
-                    Ok(request) // TODO: 에러 메세지 추가
+                    request.error_msg = Some(err.clone());
+                    Ok(request) // 업데이트된 request를 저장하기 위해 OK 반환
                 }
                 None => Err(ContractError::RequestNotFound),
             })?;
@@ -259,17 +261,18 @@ fn execute_transfer_call(
     let mut request = TransferRequest {
         id: request_id,
         mint_tx_hash: mint_tx_hash.clone(),
-        transfer_coin,
+        transfer_coin: transfer_coin.clone(),
         source_tx_height: env.block.height,
-        source_tx_index: env.transaction.as_ref().map(|tx| tx.index),
-        destination_channel: payload.transfer_call.destination_channel.clone(),
+        source_tx_index: None,
+        destination_channel,
         status: RequestStatus::Pending,
-        hook_data: Some(hook_data),
+        hook_data: Some(hook_data.clone()),
+        error_msg: None,
     };
 
-    REQUESTS_BY_ID.save(deps.storage, request_id, &request)?;
-    REQUEST_ID_BY_MINT_TX_HASH.save(deps.storage, mint_tx_hash.as_str(), &request_id)?;
-    NEXT_REQUEST_ID.save(deps.storage, &(request_id + 1))?;
+    REQUESTS_BY_ID.save(deps.storage, next_request_id, &transfer_request)?;
+    REQUEST_ID_BY_MINT_TX_HASH.save(deps.storage, mint_tx_hash.as_str(), &next_request_id)?;
+    NEXT_REQUEST_ID.save(deps.storage, &(next_request_id + 1))?;
 
     let transfer_submsg = SubMsg::reply_on_error(transfer_msg, request_id);
 
@@ -335,8 +338,9 @@ fn execute_refund(
         amount: vec![request.transfer_coin.clone()],
     };
 
-    request.status = RequestStatus::Refund;
-    REQUESTS_BY_ID.save(deps.storage, request.id, &request)?;
+    // Remove the request from the state
+    REQUESTS_BY_ID.remove(deps.storage, request.id);
+    REQUEST_ID_BY_MINT_TX_HASH.remove(deps.storage, mint_tx_hash.as_str());
 
     Ok(Response::new().add_message(refund_msg).add_attributes([
         attr("action", "refund"),
@@ -351,6 +355,7 @@ fn execute_refund(
 
 fn execute_abandon(
     deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     mint_tx_hash: String,
 ) -> Result<Response, ContractError> {
@@ -367,14 +372,15 @@ fn execute_abandon(
         return Err(ContractError::InvalidStatusTransition);
     }
 
-    request.status = RequestStatus::Abandon;
-    REQUESTS_BY_ID.save(deps.storage, request.id, &request)?;
+    // Remove the request from the state
+    REQUESTS_BY_ID.remove(deps.storage, request.id);
+    REQUEST_ID_BY_MINT_TX_HASH.remove(deps.storage, mint_tx_hash.as_str());
 
     Ok(Response::new().add_attributes([
         attr("action", "abandon"),
         attr("request_id", request.id.to_string()),
         attr("mint_tx_hash", request.mint_tx_hash.to_string()),
-        attr("status", "abandon"),
+        attr("status", "abandoned"),
     ]))
 }
 
@@ -404,6 +410,7 @@ fn to_request_item(request: TransferRequest) -> RequestItem {
         source_tx_index: request.source_tx_index,
         destination_channel: request.destination_channel,
         status: request.status,
+        error_msg: request.error_msg,
     }
 }
 
@@ -494,6 +501,7 @@ mod tests {
     #[test]
     fn instantiate_and_query_config() {
         let mut deps = mock_dependencies();
+        setup_skip_router_query(&mut deps);
         instantiate_default(deps.as_mut());
         mock_factory(&mut deps);
 
@@ -512,6 +520,7 @@ mod tests {
     #[test]
     fn transfer_call_requires_skip_relayer() {
         let mut deps = mock_dependencies();
+        setup_skip_router_query(&mut deps);
         instantiate_default(deps.as_mut());
         mock_factory(&mut deps);
         deps.querier
@@ -535,6 +544,7 @@ mod tests {
     #[test]
     fn transfer_call_registers_and_forwards_requested_amount() {
         let mut deps = mock_dependencies();
+        setup_skip_router_query(&mut deps);
         instantiate_default(deps.as_mut());
         mock_factory(&mut deps);
         deps.querier
@@ -547,7 +557,7 @@ mod tests {
             ExecuteMsg::TransferCall {
                 mint_tx_hash: "0xmint-2".to_string(),
                 transfer_coin: coin(40, "uusdc"),
-                hook_data: "{\"memo\":\"hook-data\"}".to_string(),
+                hook_data: r#"{"swap_and_action":{"user_swap":{"swap_exact_asset_in":{"swap_venue_name":"osmosis-poolmanager","operations":[{"pool":"1265","denom_in":"ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2","denom_out":"uosmo"}]}},"min_asset":{"native":{"denom":"uosmo","amount":"100"}},"timeout_timestamp":1780905488938793000,"post_swap_action":{"transfer":{"to_address":"osmo1jljc8q5ldykyvxxquvvfx7fv8tm5n9hmqzdz6d"}},"affiliates":[]}}"#.to_string(),
                 destination_channel: "channel-7".to_string(),
             },
         )
@@ -584,6 +594,7 @@ mod tests {
     #[test]
     fn reply_marks_request_fail_on_skip_entrypoint_failure() {
         let mut deps = mock_dependencies();
+        setup_skip_router_query(&mut deps);
         instantiate_default(deps.as_mut());
         mock_factory(&mut deps);
         deps.querier
@@ -625,22 +636,24 @@ mod tests {
     }
 
     #[test]
-    fn refund_and_abandon_are_request_scoped() {
+    fn refund_and_abandon_flow() {
         let mut deps = mock_dependencies();
+        setup_skip_router_query(&mut deps);
         instantiate_default(deps.as_mut());
         mock_factory(&mut deps);
         deps.querier
             .update_balance("cosmos2contract", vec![coin(100, "uusdc")]);
 
+        // 1. Create a request that will fail
         execute(
             deps.as_mut(),
             mock_env(),
             mock_info(RELAYER, &[]),
             ExecuteMsg::TransferCall {
-                mint_tx_hash: "0xmint-refund".to_string(),
-                transfer_coin: coin(25, "uusdc"),
-                hook_data: "{\"memo\":\"hook-refund\"}".to_string(),
-                destination_channel: "channel-12".to_string(),
+                mint_tx_hash: "0xmint-fail".to_string(),
+                transfer_coin: coin(30, "uusdc"),
+                hook_data: "{\"memo\":\"hook-fail\"}".to_string(),
+                destination_channel: "channel-11".to_string(),
             },
         )
         .expect("transfer should succeed");
@@ -657,47 +670,98 @@ mod tests {
         )
         .expect("reply should mark request as fail");
 
+        // 2. Mark it as failed via reply
+        let _res = reply(
+            deps.as_mut(),
+            mock_env(),
+            Reply {
+                id: 1,
+                result: SubMsgResult::Err("skip entrypoint execute failed".to_string()),
+            },
+        )
+        .expect("reply should not fail tx and must mark request as fail");
+
+        // 3. Refund the failed request
         let refund_res = execute(
             deps.as_mut(),
             mock_env(),
             mock_info(OWNER, &[]),
             ExecuteMsg::Refund {
-                mint_tx_hash: "0xmint-refund".to_string(),
+                mint_tx_hash: "0xmint-fail".to_string(),
             },
         )
         .expect("refund should succeed");
         assert_eq!(refund_res.messages.len(), 1);
 
+        // 4. Verify the request is deleted after refund
+        let err = query(
+            deps.as_ref(),
+            mock_env(),
+            QueryMsg::RequestByMintTxHash {
+                mint_tx_hash: "0xmint-fail".to_string(),
+            },
+        )
+        .unwrap_err();
+        assert!(matches!(err, StdError::NotFound { .. }));
+
+        // 5. Create another request to test abandon
+        execute(
+            deps.as_mut(),
+            mock_env(),
+            mock_info("inj1skip000000000000000000000000000000000", &[]),
+            ExecuteMsg::TransferCall {
+                mint_tx_hash: "0xmint-abandon".to_string(),
+                transfer_coin: coin(20, "uusdc"),
+                hook_data: "{\"memo\":\"hook-abandon\"}".to_string(),
+                destination_channel: "channel-12".to_string(),
+            },
+        )
+        .expect("second transfer should succeed");
+
+        // 6. Mark it as failed
+        let _res = reply(
+            deps.as_mut(),
+            mock_env(),
+            Reply {
+                id: 2,
+                result: SubMsgResult::Err("another failure".to_string()),
+            },
+        )
+        .expect("reply should mark request as fail");
+
+        // 7. Abandon the failed request
         execute(
             deps.as_mut(),
             mock_env(),
             mock_info(OWNER, &[]),
             ExecuteMsg::Abandon {
-                mint_tx_hash: "0xmint-refund".to_string(),
+                mint_tx_hash: "0xmint-abandon".to_string(),
             },
         )
-        .expect("abandon should succeed after refund");
+        .expect("abandon should succeed");
 
-        let single = query(
+        // 8. Verify the request is deleted after abandon
+        let err = query(
             deps.as_ref(),
             mock_env(),
             QueryMsg::RequestByMintTxHash {
-                mint_tx_hash: "0xmint-refund".to_string(),
+                mint_tx_hash: "0xmint-abandon".to_string(),
             },
         )
-        .expect("single query should succeed");
-        let request: RequestResponse = from_json(single).expect("decode single query response");
-        assert_eq!(request.request.status, RequestStatus::Abandon);
+        .unwrap_err();
+        assert!(matches!(err, StdError::NotFound { .. }));
     }
 
     #[test]
-    fn refund_works_for_owner() {
+    fn refund_deletes_state() {
         let mut deps = mock_dependencies();
+        setup_skip_router_query(&mut deps);
         instantiate_default(deps.as_mut());
         mock_factory(&mut deps);
         deps.querier
             .update_balance("cosmos2contract", vec![coin(80, "uusdc")]);
 
+        execute(
         execute(
             deps.as_mut(),
             mock_env(),
