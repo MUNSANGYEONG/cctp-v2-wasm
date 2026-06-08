@@ -1,9 +1,9 @@
 {
   "chain_id": "injective-888",
   "binary": "injectived",
-  "updated_at": "2026-06-08T07:58:51Z",
+  "updated_at": "2026-06-08T08:22:47Z",
   "forwarder": {
-    "code_id": 39581,
+    "code_id": 39583,
     "code_history": [
       {
         "code_id": 39570,
@@ -40,26 +40,32 @@
         "store_tx": "79DF3099941F86ABD3198EB12C67D3158E60B37BB32EF9F819E12C523BFAD78B",
         "height": "129023015",
         "created_at": "2026-06-08T07:58:00Z"
+      },
+      {
+        "code_id": 39583,
+        "store_tx": "F09DA4199EF52CB27E70AAC4A143E4B437A0E06095DDA49BFC765AF02D755713",
+        "height": "129025101",
+        "created_at": "2026-06-08T08:21:26Z"
       }
     ]
   },
   "factory": {
-    "code_id": 39582,
-    "address": "inj1l6deunsm683tz3d0eflskd5l7zh8trckxnk4ed",
-    "admin": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
-    "owner": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
-    "skip_relayer_addr": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
-    "skip_entrypoint_addr": "inj1c4yf8q74juu04s7ywydq3z24sfwhf4uer9nvpy",
-    "store_tx": "8B1650247A20078B76777A4127ADD4B8C89BB8C316C6E036B5C33AFD0B7387DE",
-    "instantiate_tx": "67E04D49EDE504BE17B991CAEEA9B9CC181BDB085E778240B418545D8200373D",
-    "instantiate_height": 129023033,
+    "code_id": 39584,
+    "address": "inj1qjfxf9zcn98xddk7hnp85sq0y6pmcf68490d55",
+    "admin": "inj1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+    "owner": "inj1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+    "skip_relayer_addr": "inj1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+    "skip_entrypoint_addr": "inj1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+    "store_tx": "E0A28E1B962B81F357D3FDE390BDD3E1C7C643E5F385111C184A03558B45AA5C",
+    "instantiate_tx": "4F3964A0EC2691F247DA3A4AE1A2D822CEBFFEE211E029C91449E6A29A21EFAF",
+    "instantiate_height": 129025122,
     "version_history": [
       {
-        "code_id": 39582,
+        "code_id": 39584,
         "action": "instantiate",
-        "tx": "67E04D49EDE504BE17B991CAEEA9B9CC181BDB085E778240B418545D8200373D",
-        "height": 129023033,
-        "at": "2026-06-08T07:58:12Z"
+        "tx": "4F3964A0EC2691F247DA3A4AE1A2D822CEBFFEE211E029C91449E6A29A21EFAF",
+        "height": 129025122,
+        "at": "2026-06-08T08:21:39Z"
       }
     ]
   },
@@ -74,6 +80,17 @@
       "create_tx": "5F2C8FF2EB257DB7316DAB5397E1ACE2BB77273F568F47AB093F372F24ABD79C",
       "height": 129023092,
       "created_at": "2026-06-08T07:58:51Z"
+    },
+    {
+      "sender_addr": "inj1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+      "dest_chain": "dyyy-1",
+      "recipient_addr": "dydx1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+      "address": "inj1tkx6vzlvun08v22yhpuc8jfn5ln9zsr607795x",
+      "salt": "87682e2a6dbee9d523f243d9eff998d941abfa6c4db0d100f0322193dbc5c843",
+      "code_id": 39583,
+      "create_tx": "D84F78304DBABC2FCDDBF81412F67E82542230F7507CA282F83EE4E5DF430DF3",
+      "height": 129025225,
+      "created_at": "2026-06-08T08:22:47Z"
     }
   ]
 }
