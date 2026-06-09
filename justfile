@@ -92,3 +92,11 @@ deploy-skip-callbacks:
 # forwarder TransferCall 실행: [forwarder_addr] [hook_data_file]
 transfer-call *args:
     ./scripts/transfer_call.sh {{args}}
+
+# forwarder 컨트랙트 config 조회: <address>
+query-forwarder address:
+    ./scripts/query_forwarder.sh {{address}}
+
+# forwarder Refund 실행: <address>
+refund address:
+    ./scripts/refund.sh {{address}}
