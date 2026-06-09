@@ -393,6 +393,7 @@ name = "forwarder"
 version = "0.1.0"
 dependencies = [
  "base64ct",
+ "bech32 0.9.1",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-multi-test",

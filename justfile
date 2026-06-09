@@ -80,3 +80,15 @@ predict-forwarder sender dest recipient:
 # 조회: config | list | addr | record [...]
 query *args:
     ./scripts/query.sh {{args}}
+
+# skip-go IBC Hooks 버전 배포 (adapter + entry_point + migrate)
+deploy-skip-hooks:
+    ./scripts/deploy_skip_hooks.sh
+
+# skip-go IBC Callbacks 버전 배포 (adapter + entry_point + migrate)
+deploy-skip-callbacks:
+    ./scripts/deploy_skip_callbacks.sh
+
+# forwarder TransferCall 실행: [forwarder_addr] [hook_data_file]
+transfer-call *args:
+    ./scripts/transfer_call.sh {{args}}

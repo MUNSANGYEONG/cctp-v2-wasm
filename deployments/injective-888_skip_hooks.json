@@ -1,0 +1,39 @@
+{
+  "chain_id": "injective-888",
+  "binary": "injectived",
+  "variant": "ibc_hooks",
+  "updated_at": "2026-06-09T03:36:28Z",
+  "ibc_adapter": {
+    "code_id": 39589,
+    "code_history": [
+      {
+        "code_id": 39589,
+        "store_tx": "75CB28FFBE6FF31677711B78DA4C48E11451FF049C4BFD8C03DAAB4E1D0ADD43",
+        "height": 129134860,
+        "created_at": "2026-06-09T03:36:06Z"
+      }
+    ],
+    "address": "inj19nlgq9w5m3pz5x7r3d8nzk88aqyffvn4jeh3r5",
+    "admin": "inj1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+    "instantiate_tx": "75CB28FFBE6FF31677711B78DA4C48E11451FF049C4BFD8C03DAAB4E1D0ADD43",
+    "instantiate_height": 129134860,
+    "migrate_to_ep_tx": "C7A957FA78AC9F801D28CF0D266D96A18CBE08F0CDA360143D8670848DAED9A0",
+    "migrate_to_ep_height": 129134885,
+    "entry_point_addr": "inj1uj67l73rn8ffzxryzf062ackzpfjfk0qnh7080"
+  },
+  "entry_point": {
+    "code_id": 39590,
+    "code_history": [
+      {
+        "code_id": 39590,
+        "store_tx": "C7A957FA78AC9F801D28CF0D266D96A18CBE08F0CDA360143D8670848DAED9A0",
+        "height": 129134885,
+        "created_at": "2026-06-09T03:36:20Z"
+      }
+    ],
+    "address": "inj1uj67l73rn8ffzxryzf062ackzpfjfk0qnh7080",
+    "admin": "inj1xp9cvnaypxnzalcu4kp22xhtmsxexducdx4myx",
+    "instantiate_tx": "C7A957FA78AC9F801D28CF0D266D96A18CBE08F0CDA360143D8670848DAED9A0",
+    "instantiate_height": 129134885
+  }
+}

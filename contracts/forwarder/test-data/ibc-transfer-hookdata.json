@@ -1,0 +1,33 @@
+{
+  "action_with_recover": {
+    "sent_asset": {
+      "native": {
+        "denom": "erc20:0x0C382e685bbeeFE5d3d9C29e29E341fEE8E84C5d",
+        "amount": "999900"
+      }
+    },
+    "timeout_timestamp": 1781004980000000000,
+    "action": {
+      "ibc_transfer": {
+        "ibc_info": {
+          "source_channel": "channel-23",
+          "receiver": "cosmos1vx4h3qns352fjasa83mesadcf3jwn3f2duptxt",
+          "fee": null,
+          "memo": "",
+          "recover_address": "inj19zrfxwx92ddrhtkjjaztafznquj32za6qhtahj",
+          "encoding": null,
+          "eureka_fee": null
+        },
+        "fee_swap": null
+      }
+    },
+    "exact_out": false,
+    "min_asset": {
+      "native": {
+        "denom": "erc20:0x0C382e685bbeeFE5d3d9C29e29E341fEE8E84C5d",
+        "amount": "990000"
+      }
+    },
+    "recovery_addr": "inj19zrfxwx92ddrhtkjjaztafznquj32za6qhtahj"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "swap_and_action_with_recover": {
+    "sent_asset": {
+      "native": {
+        "denom": "inj",
+        "amount": "1000000"
+      }
+    },
+    "user_swap": {
+      "swap_exact_asset_in": {
+        "swap_venue_name": "astroport",
+        "operations": [
+          {
+            "pool": "<POOL_ID_OR_ADDR>",
+            "denom_in": "inj",
+            "denom_out": "uusdc",
+            "interface": null
+          }
+        ]
+      }
+    },
+    "min_asset": {
+      "native": {
+        "denom": "uusdc",
+        "amount": "900000"
+      }
+    },
+    "timeout_timestamp": 999999999999999999,
+    "post_swap_action": {
+      "ibc_transfer": {
+        "ibc_info": {
+          "source_channel": "channel-0",
+          "receiver": "<DEST_CHAIN_RECEIVER>",
+          "fee": null,
+          "memo": "",
+          "recover_address": "<RECOVERY_ADDRESS>",
+          "encoding": null,
+          "eureka_fee": null
+        },
+        "fee_swap": null
+      }
+    },
+    "affiliates": [],
+    "recovery_addr": "<RECOVERY_ADDRESS>"
+  }
+}

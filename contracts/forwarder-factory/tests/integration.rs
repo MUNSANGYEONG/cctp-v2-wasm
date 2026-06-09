@@ -28,7 +28,6 @@ fn forwarder_contract() -> Box<dyn Contract<Empty>> {
             forwarder::contract::instantiate,
             forwarder::contract::query,
         )
-        .with_reply(forwarder::contract::reply)
         .with_migrate(forwarder::contract::migrate),
     )
 }

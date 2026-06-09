@@ -114,3 +114,61 @@ echo "$CONTRACT_ADDR"
 
 ## inj1mhqyl33cnel879pldsw84dmfx58xa6fahxusax
 #####
+
+# TransferCall — forwarder 컨트랙트에 hook_data를 전달해 Skip EntryPoint로 포워딩
+# 호출자: skip relayer 역할의 키 (TESTER)
+# forwarder: inj1t9lp8ttwwwnnnmgjjkggxqa9gcfdlwqhjc3c59
+
+export FORWARDER_ADDR="inj1t9lp8ttwwwnnnmgjjkggxqa9gcfdlwqhjc3c59"
+
+# forwarder config 조회
+$WASMD_FILE query wasm contract-state smart "$FORWARDER_ADDR" '{"config":{}}' \
+  --node "$RPC" \
+  --output json | jq .
+
+#####
+
+# hook_data: JSON을 한 줄 문자열로 압축 후 ExecuteMsg 래핑
+# 컨트랙트 실제 잔고를 조회해 hook_data의 sent_asset.amount와 min_asset.amount에 반영
+# export USDC_DENOM="erc20:0x0C382e685bbeeFE5d3d9C29e29E341fEE8E84C5d"
+#
+# ACTUAL_BALANCE=$(
+#   $WASMD_FILE query bank balance "$FORWARDER_ADDR" "$USDC_DENOM" \
+#     --node "$RPC" \
+#     --output json | jq -r '.balance.amount // "0"'
+# )
+# echo "forwarder balance ($USDC_DENOM): $ACTUAL_BALANCE"
+#
+# # 잔고의 99% 를 전송 금액으로, 98% 를 min_asset으로 사용
+# SEND_AMOUNT=$(python3 -c "print(int(int('$ACTUAL_BALANCE') * 99 // 100))")
+# MIN_AMOUNT=$(python3  -c "print(int(int('$ACTUAL_BALANCE') * 98 // 100))")
+# echo "send_amount: $SEND_AMOUNT  min_amount: $MIN_AMOUNT"
+#
+# HOOK_DATA=$(jq -c \
+#   --arg send "$SEND_AMOUNT" \
+#   --arg min  "$MIN_AMOUNT" \
+#   '.action_with_recover.sent_asset.native.amount = $send
+#    | .action_with_recover.min_asset.native.amount = $min' \
+#   /Users/munsangyeong/cosmostation/cctp-v2-forward-contract/contracts/forwarder/test-data/ibc-transfer-hookdata.json)
+
+HOOK_DATA=$(jq -c . /Users/munsangyeong/cosmostation/cctp-v2-forward-contract/contracts/forwarder/test-data/ibc-transfer-hookdata.json)
+
+TRANSFER_CALL_MSG=$(jq -n --arg hook_data "$HOOK_DATA" \
+  '{"transfer_call": {"hook_data": $hook_data}}')
+
+$WASMD_FILE tx wasm execute "$FORWARDER_ADDR" "$TRANSFER_CALL_MSG" \
+  --from "$WALLET" \
+  --chain-id "$CHAIN_ID" \
+  --node "$RPC" \
+  --keyring-backend test \
+  --gas auto \
+  --gas-adjustment 1.5 \
+  --gas-prices "$GAS_PRICES" \
+  --broadcast-mode sync \
+  --output json \
+  -y | tee /tmp/transfer_call_tx.json
+
+export TRANSFER_CALL_TX_HASH=$(jq -r '.txhash' /tmp/transfer_call_tx.json)
+echo "$TRANSFER_CALL_TX_HASH"
+
+#####

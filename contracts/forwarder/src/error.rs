@@ -36,4 +36,12 @@ pub enum ContractError {
     /// `instantiate` was not called by the declared factory address.
     #[error("FactoryMismatch")]
     FactoryMismatch,
+
+    /// hook_data top-level key나 sent_asset 구조가 올바르지 않음.
+    #[error("InvalidHookData")]
+    InvalidHookData,
+
+    /// sender_addr cannot be converted to a valid inj1 bech32 address.
+    #[error("InvalidRefundAddress")]
+    InvalidRefundAddress,
 }
